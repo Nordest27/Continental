@@ -1,3 +1,5 @@
+mod test_display_image;
+
 use std::convert::TryInto;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
@@ -50,34 +52,22 @@ pub fn create_shader(
     }
 }
 
-pub fn setup_shaders(gl: &WebGlRenderingContext) -> Result<WebGlProgram, JsValue> {
-    let vertex_shader_source = "
-        attribute vec3 coordinates;
-        void main(void) {
-            gl_Position = vec4(coordinates, 1.0);
-        }
-        ";
-
-    let fragment_shader_source = "
-        precision mediump float;
-        uniform vec4 fragColor;
-        void main(void) {
-            gl_FragColor = fragColor;
-        }
-        ";
-
+pub fn setup_shaders(
+    gl: &WebGlRenderingContext
+) -> Result<WebGlProgram, JsValue> {
+    let vertex_shader_source = include_str!("shaders\\vertex\\triangle.vert");
+    let fragment_shader_source = include_str!("shaders\\fragment\\triangle.frag");
     let vertex_shader = create_shader(
         &gl,
         WebGlRenderingContext::VERTEX_SHADER,
-        vertex_shader_source,
-    )
-        .unwrap();
+        &vertex_shader_source,
+    )?;
+
     let fragment_shader = create_shader(
         &gl,
         WebGlRenderingContext::FRAGMENT_SHADER,
-        fragment_shader_source,
-    )
-        .unwrap();
+        &fragment_shader_source,
+    )?;
 
     let shader_program = gl.create_program().unwrap();
     gl.attach_shader(&shader_program, &vertex_shader);
@@ -92,10 +82,10 @@ pub fn setup_shaders(gl: &WebGlRenderingContext) -> Result<WebGlProgram, JsValue
         gl.use_program(Some(&shader_program));
         Ok(shader_program)
     } else {
-        return Err(JsValue::from_str(
+        Err(JsValue::from_str(
             &gl.get_program_info_log(&shader_program)
                 .unwrap_or_else(|| "Unknown error linking program".into()),
-        ));
+        ))
     }
 }
 
@@ -129,8 +119,8 @@ pub fn draw_triangle(
     canvas_id: &str,
     selected_color: Option<Vec<f32>>,
 ) -> Result<WebGlRenderingContext, JsValue> {
-    let gl: WebGlRenderingContext = init_webgl_context(canvas_id).unwrap();
-    let shader_program: WebGlProgram = setup_shaders(&gl).unwrap();
+    let gl: WebGlRenderingContext = init_webgl_context(canvas_id)?;
+    let shader_program: WebGlProgram = setup_shaders(&gl)?;
     let vertices: [f32; 9] = [
         0.0, 1.0, 0.0, // top
         -1.0, -1.0, 0.0, // bottom left
