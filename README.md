@@ -57,4 +57,6 @@ wasm-pack test --headless --firefox
 python -m http.server
 ```
 
-### Go to `http://localhost:8000/index.html` to see the result
+### Go to `http://localhost:8000/web/index.html` to see the result
+
+Work based on the tutorial https://blog.logrocket.com/implement-webassembly-webgl-viewer-using-rust/
